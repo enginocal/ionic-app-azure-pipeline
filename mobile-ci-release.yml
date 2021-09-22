@@ -68,7 +68,7 @@ jobs:
       CleanTargetFolder: true
       preserveTimestamp: true
   - task: PublishBuildArtifacts@1
-    displayName: 'Publish Artifact: oms.mobile'
+    displayName: 'Publish Artifact: apk'
     inputs:
-      ArtifactName: oms.mobile
+      ArtifactName: apk
 ...
