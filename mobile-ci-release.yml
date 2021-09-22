@@ -1,0 +1,74 @@
+trigger:
+  branches:
+    include:
+    - release
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: release
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    vmImage: ubuntu-18.04
+  steps:
+  - checkout: self
+    clean: true
+  - task: Npm@1
+    displayName: npm install
+    inputs:
+      verbose: false
+  - task: CmdLine@2
+    displayName: npm install -g cordova@9.0.0
+    inputs:
+      script: >
+        npm install -g cordova@9.0.0
+  - task: CmdLine@2
+    displayName: npm install -g @ionic/cli
+    inputs:
+      script: npm install -g @ionic/cli
+  - task: CmdLine@2
+    displayName: npm audit fix
+    inputs:
+      script: npm audit fix
+  - task: CmdLine@2
+    displayName: ionic cordova platforms add android
+    continueOnError: True
+    inputs:
+      script: ionic cordova platforms add android@9.0.0 --verbose
+  - task: CmdLine@2
+    displayName: ionic cordova prepare android
+    continueOnError: True
+    inputs:
+      script: ionic cordova prepare android --verbose
+  - task: CmdLine@2
+    displayName: cordova plugin add cordova-plugin-ionic-webview@latest
+    inputs:
+      script: >
+        cordova plugin add cordova-plugin-ionic-webview@latest --verbose
+  - task: CmdLine@2
+    displayName: uninstall builds-tools
+    inputs:
+      script: $ANDROID_HOME/tools/bin/sdkmanager --uninstall 'build-tools;31.0.0'
+  - task: CmdLine@2
+    displayName: ionic cordova plugin add cordova-bluebird-api
+    inputs:
+      script: ionic cordova plugin add cordova-bluebird-api --verbose
+  - task: CmdLine@2
+    displayName: cordova build android --release
+    inputs:
+      script: cordova build android --release
+  - task: CopyFiles@2
+    displayName: Copy Android Files
+    inputs:
+      SourceFolder: $(Agent.BuildDirectory)
+      Contents: '**/*.apk'
+      TargetFolder: $(Build.ArtifactStagingDirectory)
+      CleanTargetFolder: true
+      preserveTimestamp: true
+  - task: PublishBuildArtifacts@1
+    displayName: 'Publish Artifact: oms.mobile'
+    inputs:
+      ArtifactName: oms.mobile
+...
